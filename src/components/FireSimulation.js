@@ -1,14 +1,15 @@
 import * as THREE from "three";
 import { useEffect } from "react";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 const FireSimulation = () => {
   useEffect(() => {
     let scene, camera, renderer, fireParticles, smokeParticles;
-    let fireAttributes = [],
-      smokeAttributes = [];
-    let fireLight;
+    let fireAttributes = [], smokeAttributes = [];
+    let fireLight, controls;
 
     const init = () => {
+      // Scene Setup
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(
         75,
@@ -16,7 +17,7 @@ const FireSimulation = () => {
         0.1,
         1000
       );
-      camera.position.z = 8;
+      camera.position.set(0, 5, 10);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -63,12 +64,21 @@ const FireSimulation = () => {
       const logs = createWoodLogs();
       logs.forEach((log) => {
         log.position.set(
-          (Math.random() - 0.5) * 0.5,
+          (Math.random() - 0.5) * 2,
           -2.5,
-          (Math.random() - 0.5) * 0.5
+          (Math.random() - 0.5) * 2
         );
         scene.add(log);
       });
+
+      // Orbit Controls for Rotating the Scene
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; // Smooth rotation
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 5; // Limit zoom out
+      controls.maxDistance = 20; // Limit zoom in
+      controls.target.set(0, 0, 0); // Focus on the fire
+      controls.update();
 
       // Handle Window Resize
       window.addEventListener("resize", onWindowResize);
@@ -87,6 +97,7 @@ const FireSimulation = () => {
         fireLight.intensity =
           2 + (Math.sin(Date.now() * 0.005) + (Math.random() - 0.5) * 0.3);
 
+        controls.update(); // Update the OrbitControls
         renderer.render(scene, camera);
       };
 
@@ -219,7 +230,7 @@ const FireSimulation = () => {
           positions[i * 3 + 1] = -1.5;
           positions[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
 
-          attributes[i].lifespan = Math.random() * 100 + 50;
+          attributes[i].lifespan = Math.random() * 200 + 50;
         }
       }
 
